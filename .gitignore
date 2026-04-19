@@ -1,0 +1,16 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*~
+
+# Local workflow artifacts — keep the repo clean of state that only makes sense
+# inside consuming projects. If someone uses vibe-session-sync inside this repo
+# itself (meta!), these files stay out of commits.
+.plan/
+.sync/
+HANDOFF.md

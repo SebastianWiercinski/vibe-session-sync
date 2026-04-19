@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Workflow — PM-Berater + Session-Sync</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0d0e;
+    --bg-elev: #151517;
+    --bg-elev-2: #1c1c1f;
+    --border: #27272b;
+    --border-strong: #3a3a40;
+    --ink: #ededed;
+    --ink-dim: #a3a3a8;
+    --ink-faint: #6c6c72;
+    --accent: #d4ff3a;
+    --accent-ink: #0d0d0e;
+    --warn: #ff8a3d;
+    --ok: #4ade80;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+    --serif: 'Fraunces', Georgia, serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--mono);
+    font-size: 14px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    background-image:
+      radial-gradient(ellipse 80% 50% at 50% -10%, rgba(212, 255, 58, 0.08), transparent 60%),
+      radial-gradient(ellipse 60% 40% at 90% 100%, rgba(212, 255, 58, 0.04), transparent 60%);
+    min-height: 100vh;
+  }
+
+  .grain {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.35;
+    z-index: 100;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+  }
+
+  .wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 48px 32px 96px;
+  }
+
+  /* HEADER */
+  header {
+    padding-bottom: 48px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 56px;
+  }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .eyebrow::before {
+    content: '';
+    width: 28px;
+    height: 1px;
+    background: var(--accent);
+  }
+
+  h1 {
+    font-family: var(--serif);
+    font-weight: 800;
+    font-size: clamp(40px, 6vw, 72px);
+    line-height: 1.02;
+    letter-spacing: -0.02em;
+    margin-bottom: 24px;
+  }
+
+  h1 em {
+    font-style: italic;
+    color: var(--accent);
+    font-weight: 400;
+  }
+
+  .sub {
+    font-family: var(--mono);
+    font-size: 15px;
+    color: var(--ink-dim);
+    max-width: 640px;
+    line-height: 1.65;
+  }
+
+  .sub code {
+    color: var(--ink);
+    background: var(--bg-elev);
+    padding: 1px 6px;
+    border-radius: 3px;
+    border: 1px solid var(--border);
+    font-size: 13px;
+  }
+
+  .meta {
+    margin-top: 32px;
+    display: flex;
+    gap: 28px;
+    flex-wrap: wrap;
+    font-size: 12px;
+    color: var(--ink-faint);
+  }
+
+  .meta span strong {
+    color: var(--ink);
+    font-weight: 500;
+  }
+
+  /* SECTION */
+  section {
+    margin-bottom: 72px;
+  }
+
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    margin-bottom: 28px;
+    padding-bottom: 16px;
+    border-bottom: 1px dashed var(--border);
+  }
+
+  .section-num {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+  }
+
+  h2 {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: 28px;
+    letter-spacing: -0.01em;
+  }
+
+  h3 {
+    font-family: var(--mono);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--ink-dim);
+    margin-bottom: 16px;
+    font-weight: 500;
+  }
+
+  /* COMMAND TABLE */
+  .cmd-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .cmd-row {
+    display: grid;
+    grid-template-columns: 220px 200px 1fr;
+    gap: 20px;
+    padding: 18px 22px;
+    background: var(--bg-elev);
+    align-items: center;
+    transition: background 0.15s;
+  }
+
+  .cmd-row:hover { background: var(--bg-elev-2); }
+
+  .cmd-row.head {
+    background: var(--bg);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--ink-faint);
+    padding: 14px 22px;
+  }
+
+  .cmd-row.head:hover { background: var(--bg); }
+
+  .cmd-name {
+    font-family: var(--mono);
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  .cmd-when { color: var(--ink-dim); font-size: 13px; }
+  .cmd-desc { color: var(--ink); font-size: 13px; }
+
+  @media (max-width: 720px) {
+    .cmd-row { grid-template-columns: 1fr; gap: 6px; padding: 16px; }
+    .cmd-row.head { display: none; }
+    .cmd-when::before { content: 'Wann: '; color: var(--ink-faint); }
+    .cmd-desc::before { content: 'Zweck: '; color: var(--ink-faint); }
+  }
+
+  /* WORKFLOW PHASES */
+  .phase {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin-bottom: 20px;
+    overflow: hidden;
+    background: var(--bg-elev);
+  }
+
+  .phase-head {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: linear-gradient(180deg, var(--bg-elev-2), var(--bg-elev));
+  }
+
+  .phase-tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    padding: 4px 10px;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    border-radius: 3px;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .phase-title {
+    font-family: var(--serif);
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+
+  .phase-hint {
+    margin-left: auto;
+    font-size: 11px;
+    color: var(--ink-faint);
+  }
+
+  .phase-body {
+    padding: 24px;
+  }
+
+  /* CODE BLOCK */
+  pre {
+    background: #000;
+    border: 1px solid var(--border-strong);
+    border-radius: 4px;
+    padding: 16px 18px;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--ink);
+    margin: 12px 0;
+    position: relative;
+  }
+
+  pre::before {
+    content: '$';
+    position: absolute;
+    top: 16px;
+    left: -14px;
+    color: var(--accent);
+    font-weight: 700;
+    opacity: 0.3;
+  }
+
+  pre.plain::before { content: none; }
+
+  pre .cmd { color: var(--accent); font-weight: 500; }
+  pre .comment { color: var(--ink-faint); }
+  pre .str { color: #ffd789; }
+
+  .arrow {
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  p.lead {
+    font-size: 14px;
+    color: var(--ink-dim);
+    margin-bottom: 8px;
+  }
+
+  ul.detail {
+    list-style: none;
+    padding: 0;
+    margin: 12px 0;
+  }
+
+  ul.detail li {
+    padding: 6px 0 6px 24px;
+    position: relative;
+    color: var(--ink-dim);
+    font-size: 13px;
+  }
+
+  ul.detail li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  ul.detail li strong {
+    color: var(--ink);
+    font-weight: 500;
+  }
+
+  ul.detail li code {
+    background: var(--bg);
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 12px;
+    color: var(--accent);
+    border: 1px solid var(--border);
+  }
+
+  .callout {
+    margin: 16px 0;
+    padding: 14px 18px;
+    border-left: 2px solid var(--accent);
+    background: rgba(212, 255, 58, 0.04);
+    font-size: 13px;
+    color: var(--ink-dim);
+  }
+
+  .callout strong { color: var(--ink); }
+
+  /* FILE TREE */
+  .tree {
+    font-family: var(--mono);
+    font-size: 13px;
+    background: #000;
+    border: 1px solid var(--border-strong);
+    border-radius: 6px;
+    padding: 24px 28px;
+    line-height: 1.9;
+    overflow-x: auto;
+  }
+
+  .tree .dir { color: var(--accent); font-weight: 500; }
+  .tree .file { color: var(--ink); }
+  .tree .annot { color: var(--ink-faint); font-style: italic; }
+  .tree .pipe { color: var(--border-strong); }
+
+  /* RULES */
+  .rules {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 14px;
+  }
+
+  .rule {
+    padding: 18px 20px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--bg-elev);
+    position: relative;
+    display: flex;
+    gap: 14px;
+  }
+
+  .rule-num {
+    font-family: var(--serif);
+    font-size: 32px;
+    color: var(--accent);
+    line-height: 1;
+    font-weight: 800;
+    font-style: italic;
+    flex-shrink: 0;
+  }
+
+  .rule-text {
+    font-size: 13px;
+    color: var(--ink-dim);
+    line-height: 1.55;
+  }
+
+  .rule-text strong { color: var(--ink); font-weight: 500; }
+  .rule-text code {
+    background: var(--bg);
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 12px;
+    color: var(--accent);
+    border: 1px solid var(--border);
+  }
+
+  /* GIT POLICY TABLE */
+  .policy {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .policy-row {
+    display: grid;
+    grid-template-columns: 200px 1fr 180px;
+    gap: 20px;
+    padding: 16px 22px;
+    background: var(--bg-elev);
+    align-items: center;
+    font-size: 13px;
+  }
+
+  .policy-row.head {
+    background: var(--bg);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--ink-faint);
+    padding: 14px 22px;
+  }
+
+  .policy-who {
+    font-family: var(--mono);
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  .policy-what { color: var(--ink); }
+  .policy-when { color: var(--ink-dim); font-size: 12px; }
+
+  .policy-row code {
+    background: var(--bg);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 12px;
+    color: var(--accent);
+    border: 1px solid var(--border);
+  }
+
+  @media (max-width: 720px) {
+    .policy-row { grid-template-columns: 1fr; gap: 4px; padding: 14px 18px; }
+    .policy-row.head { display: none; }
+    .policy-who::before { content: ''; }
+    .policy-what::before { content: 'Was: '; color: var(--ink-faint); }
+    .policy-when::before { content: 'Wann: '; color: var(--ink-faint); }
+  }
+
+  /* TL;DR */
+  .tldr {
+    border: 2px solid var(--accent);
+    border-radius: 6px;
+    padding: 28px 32px;
+    background: linear-gradient(180deg, rgba(212, 255, 58, 0.06), transparent);
+    position: relative;
+  }
+
+  .tldr-label {
+    position: absolute;
+    top: -10px;
+    left: 24px;
+    background: var(--bg);
+    padding: 0 10px;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  .tldr pre { margin: 0; border: none; padding: 0; background: transparent; }
+  .tldr pre::before { content: none; }
+
+  /* FOOTER */
+  footer {
+    margin-top: 80px;
+    padding-top: 32px;
+    border-top: 1px solid var(--border);
+    font-size: 11px;
+    color: var(--ink-faint);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  footer a {
+    color: var(--ink-dim);
+    text-decoration: none;
+    border-bottom: 1px dashed var(--border-strong);
+    transition: color 0.15s, border-color 0.15s;
+  }
+
+  footer a:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+
+  footer .dot {
+    color: var(--accent);
+  }
+
+  /* stagger fade-in */
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  header, section, footer {
+    animation: rise 0.6s ease-out backwards;
+  }
+  header { animation-delay: 0s; }
+  section:nth-of-type(1) { animation-delay: 0.1s; }
+  section:nth-of-type(2) { animation-delay: 0.2s; }
+  section:nth-of-type(3) { animation-delay: 0.3s; }
+  section:nth-of-type(4) { animation-delay: 0.4s; }
+  section:nth-of-type(5) { animation-delay: 0.5s; }
+  section:nth-of-type(6) { animation-delay: 0.6s; }
+</style>
+</head>
+<body>
+<div class="grain"></div>
+
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">Workflow · Multi-Session · Claude Code + Codex</div>
+  <h1>PM-Berater<br>+ <em>Session-Sync</em></h1>
+  <p class="sub">
+    Sechs Skills, ein Workflow. Für große Projekte mit parallelen Arbeits-Sessions.
+    Liegen in <code>~/.agents/skills/</code>, laufen in <strong>Claude Code</strong> und <strong>Codex</strong>.
+    Der PM berät, plant und setzt Git-Identity. Der Sync hält Sessions synchron und committed.
+    <code>/feierabend</code> pusht am Ende. Kein Tool schreibt blind Code.
+  </p>
+  <div class="meta">
+    <span><strong>6</strong> Commands</span>
+    <span><strong>3</strong> Phasen</span>
+    <span><strong>2</strong> Verzeichnisse</span>
+    <span><strong>∞</strong> parallele Sessions</span>
+  </div>
+</header>
+
+<!-- 1. COMMANDS -->
+<section>
+  <div class="section-head">
+    <span class="section-num">01</span>
+    <h2>Die 6 Commands</h2>
+  </div>
+
+  <div class="cmd-grid">
+    <div class="cmd-row head">
+      <div>Command</div>
+      <div>Wann</div>
+      <div>Zweck</div>
+    </div>
+    <div class="cmd-row">
+      <div class="cmd-name">/pm-consultant</div>
+      <div class="cmd-when">Projektstart + alle paar Tage</div>
+      <div class="cmd-desc">Plant, berät, setzt Git-Identity, generiert Briefings — nie Code</div>
+    </div>
+    <div class="cmd-row">
+      <div class="cmd-name">/sync-init &lt;name&gt;</div>
+      <div class="cmd-when">1× am Start jeder Session</div>
+      <div class="cmd-desc">Registriert Session</div>
+    </div>
+    <div class="cmd-row">
+      <div class="cmd-name">/sync-start</div>
+      <div class="cmd-when">Anfang jeder Arbeits-Session</div>
+      <div class="cmd-desc">Zeigt was andere Sessions gemacht haben</div>
+    </div>
+    <div class="cmd-row">
+      <div class="cmd-name">/sync-end</div>
+      <div class="cmd-when">Vor Pause / Session-Ende</div>
+      <div class="cmd-desc">Status-Update + Contract-Check + <strong>Commit</strong> der Session-Arbeit</div>
+    </div>
+    <div class="cmd-row">
+      <div class="cmd-name">/sync-status</div>
+      <div class="cmd-when">Jederzeit</div>
+      <div class="cmd-desc">Tabelle aller Sessions</div>
+    </div>
+    <div class="cmd-row">
+      <div class="cmd-name">/feierabend</div>
+      <div class="cmd-when">Ganz am Ende</div>
+      <div class="cmd-desc">Zero-question Abschluss + HANDOFF.md + <strong>Push</strong> aller Branches</div>
+    </div>
+  </div>
+</section>
+
+<!-- 2. WORKFLOW -->
+<section>
+  <div class="section-head">
+    <span class="section-num">02</span>
+    <h2>Der perfekte Workflow</h2>
+  </div>
+
+  <div class="phase">
+    <div class="phase-head">
+      <span class="phase-tag">Phase 1</span>
+      <span class="phase-title">Kickoff</span>
+      <span class="phase-hint">1× pro Projekt · Solo-Session</span>
+    </div>
+    <div class="phase-body">
+      <pre><span class="cmd">/pm-consultant</span></pre>
+      <ul class="detail">
+        <li>Er fragt <strong>4 Dinge</strong>: Was baust du, Greenfield?, Deadline-Gefühl?, <strong>Git-Identity</strong> (Name + Email)</li>
+        <li>Setzt direkt <code>git config --local user.name/email</code> — alle Sessions committen automatisch mit der richtigen Identity</li>
+        <li>Schlägt <strong>3–7 Work Packages</strong> + Dependency-Graph vor</li>
+        <li>Diskutiert Session-Splits (was parallel, was seriell)</li>
+        <li>Legt <code>.plan/</code> an: <code>overview.md</code> (inkl. Git-Setup-Sektion), <code>decisions.md</code>, <code>beratung-log.md</code></li>
+      </ul>
+      <p class="lead" style="margin-top:16px;">Dann:</p>
+      <pre>"schreib mir briefings für alle packages"</pre>
+      <p class="lead" style="margin-top:12px;"><span class="arrow">→</span> Copy-Paste-Ready Markdown-Blöcke pro Session <strong style="color:var(--ink)">+ Next-Actions-Tabelle</strong> mit Modus + Branch pro Session</p>
+    </div>
+  </div>
+
+  <div class="phase">
+    <div class="phase-head">
+      <span class="phase-tag">Phase 2</span>
+      <span class="phase-title">Parallele Arbeit</span>
+      <span class="phase-hint">N Sessions gleichzeitig</span>
+    </div>
+    <div class="phase-body">
+      <h3>Einstieg — jede Session, immer gleich</h3>
+      <pre class="plain"><span class="comment">[Briefing + Next-Actions-Block aus Phase 1 in den Chat pasten]</span>
+<span class="cmd">git checkout -b</span> feat/auth          <span class="comment"># Branch aus Next-Actions-Tabelle</span>
+<span class="cmd">/sync-init</span> auth-feature          <span class="comment"># eigener Name</span>
+<span class="cmd">/sync-start</span>                       <span class="comment"># was machen die anderen?</span></pre>
+
+      <h3 style="margin-top:24px;">Während der Arbeit</h3>
+      <ul class="detail">
+        <li><strong>Contract-Änderung</strong> (API, Types, DB-Schema)? → ankündigen, am Ende mit <code>/sync-end</code> in <code>_shared.md</code> dokumentieren</li>
+        <li><strong>Frage an andere Session?</strong> → in eigenem Session-File unter "Open questions" mit <code>@other-session</code> taggen</li>
+        <li><strong>Zwischendurch Überblick nötig?</strong> → <code>/sync-status</code></li>
+      </ul>
+
+      <h3 style="margin-top:24px;">Session-Ende — immer in dieser Reihenfolge</h3>
+      <pre class="plain"><span class="cmd">/sync-end</span>        <span class="comment"># Status + Contract-Check (ja/gesehen/nein) + git commit</span>
+<span class="cmd">/feierabend</span>      <span class="comment"># Abschluss-Report + HANDOFF.md + git push aller Branches</span></pre>
+      <div class="callout">
+        <strong>Wichtig:</strong> <code>/sync-end</code> committed <em>nur</em>, pusht nicht. <code>/feierabend</code> pusht <em>alle</em> lokalen Branches mit unpushed Commits — ein Aufruf reicht auch für Multi-Session-Tage.
+      </div>
+    </div>
+  </div>
+
+  <div class="phase">
+    <div class="phase-head">
+      <span class="phase-tag">Phase 3</span>
+      <span class="phase-title">Regelmäßiger Strategie-Check</span>
+      <span class="phase-hint">alle 2–3 Tage</span>
+    </div>
+    <div class="phase-body">
+      <pre><span class="cmd">/pm-consultant</span></pre>
+      <p class="lead" style="margin-top:12px;">Er liest <strong style="color:var(--ink)">still</strong>: <code>.plan/</code> + <code>.sync/</code> + <code>HANDOFF.md</code> + <code>git log</code> seit letzter Beratung · prüft Identity-Match</p>
+      <p class="lead" style="margin-top:8px;">Zeigt Delta:</p>
+      <ul class="detail">
+        <li><strong>✓ Erledigt</strong> (mit Commits)</li>
+        <li><strong>⚠️ Abweichungen</strong> vom Plan</li>
+        <li><strong>🔄 Neue Contract-Changes</strong></li>
+        <li><strong>📝 Offene Action-Items</strong> vom letzten Mal</li>
+        <li><strong>🔐 Identity-Mismatch?</strong> (unpushed → Rewrite-Vorschlag · pushed → Force-Push-Warnung mit 3 Optionen)</li>
+      </ul>
+      <p class="lead" style="margin-top:16px;">Dann freies Gespräch:</p>
+      <ul class="detail">
+        <li>Entscheidungen <span class="arrow">→</span> neue ADRs in <code>decisions.md</code></li>
+        <li>Neue Pakete <span class="arrow">→</span> Plan-Update + neue Briefings</li>
+        <li>Blockierte Session <span class="arrow">→</span> Re-Priorisierung</li>
+      </ul>
+      <p class="lead" style="margin-top:16px;">Und immer am Ende: <strong style="color:var(--ink)">Next-Actions-Tabelle</strong> mit konkreten <code>/sync-init &lt;name&gt;</code>-Befehlen + empfohlenem Modus (Plan / Auto / Bypass-Permissions) + Branch + 1-Satz-Briefing pro Session.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 3. FILESYSTEM -->
+<section>
+  <div class="section-head">
+    <span class="section-num">03</span>
+    <h2>Dateisystem</h2>
+  </div>
+
+  <p class="lead" style="margin-bottom:16px;">Alle Workflow-Artefakte liegen im <strong style="color:var(--ink)">Projekt-Root</strong>, nicht unter <code style="background:var(--bg-elev);padding:1px 6px;border-radius:3px;border:1px solid var(--border);color:var(--ink);">.claude/</code>. Grund: Claude Code hat für <code style="background:var(--bg-elev);padding:1px 6px;border-radius:3px;border:1px solid var(--border);color:var(--ink);">.claude/</code> eine hardcoded sensitive-file protection, die bei jedem Write prompted (auch im Bypass-Modus).</p>
+
+  <div class="tree">
+<span class="dir">&lt;projekt&gt;/</span>
+<span class="pipe">├──</span> <span class="dir">.plan/</span>                  <span class="annot">← /pm-consultant</span>
+<span class="pipe">│   ├──</span> <span class="file">overview.md</span>         <span class="annot">Work Packages, Status, Git Setup (living)</span>
+<span class="pipe">│   ├──</span> <span class="file">decisions.md</span>        <span class="annot">ADRs (append-only)</span>
+<span class="pipe">│   ├──</span> <span class="file">beratung-log.md</span>     <span class="annot">Jede Beratung (append-only)</span>
+<span class="pipe">│   └──</span> <span class="dir">briefings/</span>          <span class="annot">Optional: gespeicherte Briefings</span>
+<span class="pipe">│</span>
+<span class="pipe">├──</span> <span class="dir">.sync/</span>                  <span class="annot">← /sync-*</span>
+<span class="pipe">│   ├──</span> <span class="file">_shared.md</span>          <span class="annot">Contracts, Types, Breaking Changes</span>
+<span class="pipe">│   ├──</span> <span class="file">_active.json</span>        <span class="annot">Session-Registry</span>
+<span class="pipe">│   └──</span> <span class="file">&lt;session&gt;.md</span>       <span class="annot">Pro Session: Scope, Files, Fragen</span>
+<span class="pipe">│</span>
+<span class="pipe">└──</span> <span class="file">HANDOFF.md</span>              <span class="annot">← /feierabend (Root, sichtbar in git)</span>
+  </div>
+</section>
+
+<!-- 4. RULES -->
+<section>
+  <div class="section-head">
+    <span class="section-num">04</span>
+    <h2>Goldene Regeln</h2>
+  </div>
+
+  <div class="rules">
+    <div class="rule">
+      <div class="rule-num">1</div>
+      <div class="rule-text"><strong><code>/pm-consultant</code> schreibt nie Code.</strong> Implementierung → immer neue Session mit Briefing.</div>
+    </div>
+    <div class="rule">
+      <div class="rule-num">2</div>
+      <div class="rule-text"><strong><code>/sync-end</code> blockt nie.</strong> Contract-Warnung = "ja / gesehen / nein", kein Stopp.</div>
+    </div>
+    <div class="rule">
+      <div class="rule-num">3</div>
+      <div class="rule-text"><strong>Eine Session = ein Name.</strong> <code>/sync-init</code> einmal, dann bleibt er stecken.</div>
+    </div>
+    <div class="rule">
+      <div class="rule-num">4</div>
+      <div class="rule-text"><strong><code>_shared.md</code> ist die Wahrheit</strong> für alles zwischen Sessions.</div>
+    </div>
+    <div class="rule">
+      <div class="rule-num">5</div>
+      <div class="rule-text"><strong><code>@&lt;session&gt;</code>-Tags</strong> nutzen — der Empfänger sieht sie bei <code>/sync-start</code>.</div>
+    </div>
+    <div class="rule">
+      <div class="rule-num">6</div>
+      <div class="rule-text"><strong>Nach Pause immer erst <code>/pm-consultant</code></strong> — nie blind reinspringen, er hat den Überblick.</div>
+    </div>
+    <div class="rule">
+      <div class="rule-num">7</div>
+      <div class="rule-text"><strong>Session committed, Feierabend pusht.</strong> Nie umgekehrt. Nie manuell <code>--force</code>.</div>
+    </div>
+    <div class="rule">
+      <div class="rule-num">8</div>
+      <div class="rule-text"><strong>Identity beim Kickoff setzen.</strong> pm-consultant fragt Name + Email ab und setzt <code>git config --local</code> — Commits landen beim richtigen GitHub-Account.</div>
+    </div>
+  </div>
+</section>
+
+<!-- 5. GIT POLICY -->
+<section>
+  <div class="section-head">
+    <span class="section-num">05</span>
+    <h2>Git-Policy</h2>
+  </div>
+
+  <p class="lead" style="margin-bottom:16px;">Wer committet, wer pusht, wer setzt Identity — klare Zuständigkeiten, keine manuelle Pflege.</p>
+
+  <div class="policy">
+    <div class="policy-row head">
+      <div>Wer</div>
+      <div>Was</div>
+      <div>Wann</div>
+    </div>
+    <div class="policy-row">
+      <div class="policy-who">/pm-consultant</div>
+      <div class="policy-what">Setzt <code>git config --local user.name/email</code>, dokumentiert Identity + Branch-Policy in <code>overview.md</code></div>
+      <div class="policy-when">Kickoff</div>
+    </div>
+    <div class="policy-row">
+      <div class="policy-who">/pm-consultant</div>
+      <div class="policy-what">Prüft Identity-Match, warnt bei Mismatch, empfiehlt Branch pro Work-Package (Next-Actions-Spalte)</div>
+      <div class="policy-when">Jeder Refresh</div>
+    </div>
+    <div class="policy-row">
+      <div class="policy-who">Working Session</div>
+      <div class="policy-what"><code>git checkout -b &lt;branch&gt;</code> (falls im Briefing empfohlen) — dann arbeiten</div>
+      <div class="policy-when">Session-Start</div>
+    </div>
+    <div class="policy-row">
+      <div class="policy-who">/sync-end</div>
+      <div class="policy-what"><code>git add &lt;touched files&gt;</code> + <code>git commit</code> mit sauberer Session-Message. <strong>Nicht pushen.</strong></div>
+      <div class="policy-when">Pro Session-Ende</div>
+    </div>
+    <div class="policy-row">
+      <div class="policy-who">/feierabend</div>
+      <div class="policy-what"><code>git push</code> aller Branches wenn Pre-flight grün (Upstream, clean, tests green, Identity-Match pro Commit)</div>
+      <div class="policy-when">Absolutes Ende</div>
+    </div>
+    <div class="policy-row">
+      <div class="policy-who">User manuell</div>
+      <div class="policy-what">Rewrites (rebase, filter-branch), Force-Pushes, Cherry-Picks, Merge-Konflikt-Resolves</div>
+      <div class="policy-when">Bei Bedarf</div>
+    </div>
+  </div>
+
+  <div class="callout" style="margin-top:20px;">
+    <strong>Pre-flight-Fails</strong> werden im <code>/feierabend</code>-Report geskipped + gemeldet — nie blockiert, nie geforced. Identity-Mismatch pro Branch wird erkannt; andere Branches pushen trotzdem durch.
+  </div>
+
+  <h3 style="margin-top:28px;">Branch-Heuristik</h3>
+  <ul class="detail">
+    <li><code>main</code> direkt drauf <span class="arrow">—</span> Solo-Session, kleiner Scope, keine andere Session parallel</li>
+    <li><code>feat/&lt;name&gt;</code> <span class="arrow">—</span> Neues Feature, Code-Touches, parallel zu anderen Sessions</li>
+    <li><code>fix/&lt;name&gt;</code> <span class="arrow">—</span> Bugfix, soll klar als Fix im Log erscheinen</li>
+    <li><code>chore/&lt;name&gt;</code> <span class="arrow">—</span> Refactor/Housekeeping mit breitem Impact</li>
+    <li><code>spike/&lt;name&gt;</code> <span class="arrow">—</span> Experimentell, evtl. wegwerfen</li>
+  </ul>
+</section>
+
+<!-- 6. TL;DR -->
+<section>
+  <div class="section-head">
+    <span class="section-num">06</span>
+    <h2>TL;DR</h2>
+  </div>
+
+  <div class="tldr">
+    <div class="tldr-label">Merken</div>
+    <pre class="plain"><span class="cmd">Start:</span>    /pm-consultant <span class="arrow">→</span> Git-Identity + Briefings + Next-Actions-Tabelle
+<span class="cmd">Session:</span>  git checkout &lt;branch&gt; <span class="arrow">→</span> /sync-init <span class="arrow">→</span> /sync-start <span class="arrow">→</span> arbeiten
+          <span class="arrow">→</span> /sync-end (committed) <span class="arrow">→</span> /feierabend (pusht)
+<span class="cmd">Check:</span>    /pm-consultant (er refreshed sich selbst, prüft Identity)</pre>
+  </div>
+</section>
+
+<footer>
+  <div>
+    <a href="https://github.com/SebastianWiercinski/vibe-session-sync">github.com/SebastianWiercinski/vibe-session-sync</a>
+    <span class="dot">·</span> MIT
+  </div>
+  <div>FUTRIZE <span class="dot">·</span> Sebastian Wiercinski</div>
+</footer>
+
+</div>
+</body>
+</html>
