@@ -52,7 +52,7 @@ Restart Claude Code / Codex so the skills get picked up. Then in any project:
 
 ## The full workflow
 
-Rendered cheatsheet: [**`workflow.html`**](./workflow.html) · Plain-text: [**`CHEATSHEET.md`**](./CHEATSHEET.md)
+Rendered cheatsheet: [**live page**](https://sebastianwiercinski.github.io/vibe-session-sync/) · Plain-text: [**`CHEATSHEET.md`**](./CHEATSHEET.md) · Source: [**`index.html`**](./index.html)
 
 **TL;DR:**
 

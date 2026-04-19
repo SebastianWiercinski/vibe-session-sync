@@ -62,4 +62,4 @@ echo
 echo "Next:"
 echo "  1. Restart Claude Code / Codex"
 echo "  2. Open any project, run /pm-consultant to kick off"
-echo "  3. Read ./CHEATSHEET.md or open ./workflow.html for the full workflow"
+echo "  3. Read ./CHEATSHEET.md, open ./index.html, or visit https://sebastianwiercinski.github.io/vibe-session-sync/"
