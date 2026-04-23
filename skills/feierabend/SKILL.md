@@ -1,6 +1,6 @@
 ---
 name: feierabend
-description: End-of-session routine. Use when the user types `/feierabend`, says "Feierabend", "end of session", "wrap up", "pack up", "ich bin fertig für heute", "session abschließen", or similar. Scans git/tests/memory/plans in parallel, writes safe artifacts (HANDOFF, additive memory, sync-end) silently, produces one zero-question report with copy-paste-ready commit draft and TODO list for the user.
+description: End-of-session routine, triggered ONLY by the explicit `/feierabend` slash command. Never auto-trigger on natural-language phrases like "wrap up", "end of session", "pack up", or similar conversational/thinking language — this skill performs git pushes and must stay user-initiated. Scans git/tests/memory/plans in parallel, writes safe artifacts (HANDOFF, additive memory, sync-end) silently, produces one zero-question report with copy-paste-ready commit draft and TODO list for the user.
 ---
 
 # Feierabend

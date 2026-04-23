@@ -1,6 +1,6 @@
 ---
 name: sync-start
-description: Show changes from other parallel sessions since this session last checked in. Use when the user types `/sync-start`, says "sync check", "was haben andere sessions gemacht", "catch up on other sessions", "session sync update". Reads `.sync/_shared.md` and all other per-session status files, highlights items tagged at the current session.
+description: Show changes from other parallel sessions since this session last checked in, triggered ONLY by the explicit `/sync-start` slash command. Never auto-trigger on natural-language phrases like "sync check", "catch up on other sessions", "was haben die anderen gemacht", or similar — this skill should remain user-initiated. Reads `.sync/_shared.md` and all other per-session status files, highlights items tagged at the current session.
 ---
 
 # Sync Start

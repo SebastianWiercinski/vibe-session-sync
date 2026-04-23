@@ -1,6 +1,6 @@
 ---
 name: sync-status
-description: Compact overview of all registered session-sync sessions in this project. Use when the user types `/sync-status`, says "sync status", "welche sessions sind aktiv", "show all sessions", "sync overview". Read-only — shows names, branches, last-active, open questions, scope summaries in a table.
+description: Compact overview of all registered session-sync sessions in this project, triggered ONLY by the explicit `/sync-status` slash command. Never auto-trigger on natural-language phrases like "sync status", "welche sessions sind aktiv", "show all sessions", or similar — this skill should remain user-initiated. Read-only — shows names, branches, last-active, open questions, scope summaries in a table.
 ---
 
 # Sync Status

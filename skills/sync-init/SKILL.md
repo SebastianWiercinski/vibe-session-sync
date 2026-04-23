@@ -1,6 +1,6 @@
 ---
 name: sync-init
-description: Initialize session-sync tracking with a chosen name. Use when the user types `/sync-init <name>` or says "start session sync", "init sync", "session sync anlegen", "register this session as <name>". Sets up `.sync/` structure (project root) with per-session status files and shared contract doc for coordinating multiple parallel Claude/Codex sessions on the same project.
+description: Initialize session-sync tracking with a chosen name, triggered ONLY by the explicit `/sync-init <name>` slash command. Never auto-trigger on natural-language phrases like "start session sync", "init sync", "register this session", or similar — this skill should remain user-initiated. Sets up `.sync/` structure (project root) with per-session status files and shared contract doc for coordinating multiple parallel Claude/Codex sessions on the same project.
 ---
 
 # Sync Init

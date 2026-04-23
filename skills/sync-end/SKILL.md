@@ -1,6 +1,6 @@
 ---
 name: sync-end
-description: Update this session's status file and flag contract-relevant changes (warn only, never block). Use when the user types `/sync-end`, says "sync end", "update my session status", "log this session", "sync out". Writes touched files, next steps, open questions to the session file; prompts once about contract-relevant changes but always allows user to dismiss.
+description: Update this session's status file and flag contract-relevant changes, triggered ONLY by the explicit `/sync-end` slash command. Never auto-trigger on natural-language phrases like "sync end", "update my session status", "log this session", "sync out", or similar conversational language — this skill creates a git commit and must stay user-initiated. Writes touched files, next steps, open questions to the session file; prompts once about contract-relevant changes but always allows user to dismiss; warns on contracts but never blocks.
 ---
 
 # Sync End

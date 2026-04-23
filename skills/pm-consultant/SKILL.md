@@ -1,6 +1,6 @@
 ---
 name: pm-consultant
-description: Project management consultant for large multi-session projects. Use when the user types `/pm-consultant`, says "projekt planen", "lass uns das projekt durchdenken", "pm-berater", "ich brauche struktur für das projekt", "projekt aufteilen", "work package splitting", "projektberatung". Auto-refreshes its own context from .plan/, .sync/, HANDOFF.md, and git log before advising — always speaks from current state. Produces planning artifacts and session briefings the user distributes manually. Never writes code, never assigns tasks autonomously. Ends every consultation with a "Next Actions" table: which sessions to start, in which mode, with copy-paste-ready briefings.
+description: Project management consultant for large multi-session projects, triggered ONLY by the explicit `/pm-consultant` slash command. Never auto-trigger on natural-language phrases like "projekt planen", "pm-berater", "lass uns durchdenken", or similar conversational language — this skill writes planning artifacts and must stay user-initiated. Auto-refreshes its own context from .plan/, .sync/, HANDOFF.md, and git log before advising — always speaks from current state. Produces planning artifacts and session briefings the user distributes manually. Never writes code, never assigns tasks autonomously. Ends every consultation with a "Next Actions" table: which sessions to start, in which mode, with copy-paste-ready briefings.
 ---
 
 # PM Consultant
